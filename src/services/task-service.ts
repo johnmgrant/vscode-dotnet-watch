@@ -103,10 +103,10 @@ export default class TaskService implements Disposable {
    * @static
    * @param {DotNetWatchDebugConfiguration} config
    * @param {string} [project=""]
-   * @returns {Task}
+   * @returns {Task | undefined}
    * @memberof TaskService
    */
-  private static async GenerateTask(config: DotNetWatchDebugConfiguration, projectUri: Uri): Promise<Task> {
+  private static async GenerateTask(config: DotNetWatchDebugConfiguration, projectUri: Uri): Promise<Task | undefined> {
     const name_regex = /(^.+)(\/|\\)(.+).csproj/;
     const matches = name_regex.exec(projectUri.fsPath);
     let projectName = "",
@@ -115,22 +115,39 @@ export default class TaskService implements Disposable {
       projectName = matches[3];
       launchSettingsPath = `${matches[1]}/Properties/launchSettings.json`;
     }
-    await TaskService.TryLoadLaunchProfile(launchSettingsPath, config);
-    const task: Task = new Task(
-      { type: `Watch ${projectName}` } as TaskDefinition,
-      config.workspace,
-      `Watch ${projectName}`,
-      "DotNet Auto Attach",
-      new ProcessExecution("dotnet", ["watch", "--project", projectUri.fsPath, "run", ...config.args], {
-        cwd: config.workspace.uri.fsPath,
-        env: config.env,
-      }),
-      "$msCompile"
-    );
-    //setting these gives a better experience when debugging
-    task.presentationOptions.reveal = TaskRevealKind.Silent;
-    task.presentationOptions.showReuseMessage = false;
-    return task;
+    const taskName = config?.taskName;
+    if (!taskName) {
+      await TaskService.TryLoadLaunchProfile(launchSettingsPath, config);
+      const task: Task = new Task(
+        { type: `Watch ${projectName}`, presentation: { group: "dev" } } as TaskDefinition,
+        config.workspace,
+        `Watch ${projectName}`,
+        "DotNet Auto Attach",
+        new ProcessExecution("dotnet", ["watch", "--project", projectUri.fsPath, "run", ...config.args], {
+          cwd: config.workspace.uri.fsPath,
+          env: config.env,
+        }),
+        "$msCompile"
+      );
+      //setting these gives a better experience when debugging
+      task.presentationOptions.reveal = TaskRevealKind.Silent;
+      task.presentationOptions.showReuseMessage = false;
+      return task;
+    } else {
+      const workspaceTasks = await tasks.fetchTasks();
+      let dotnetWatchTask: Task | undefined = undefined;
+
+      // search For the task.
+      for (const t of workspaceTasks) {
+        if (t.name === taskName) {
+          dotnetWatchTask = t;
+          break;
+        }
+      }
+
+      if (dotnetWatchTask === undefined) DotNetWatch.UiService.GenericErrorMessage(`Error loading task [${taskName}]`);
+      return dotnetWatchTask;
+    }
   }
 
   private static async TryLoadLaunchProfile(launchSettingsPath: string, config: DotNetWatchDebugConfiguration) {
@@ -182,15 +199,15 @@ export default class TaskService implements Disposable {
   private CheckProjectConfig(project: string): Thenable<Uri | undefined> {
     let decodedProject = project;
     const isCsproj = project.endsWith(".csproj");
-		const workspaceFolderKeyword = '${workspaceFolder}';
+    const workspaceFolderKeyword = "${workspaceFolder}";
     // if it is not a specific file, probably only a folder name.
     if (!isCsproj) {
       return workspace.findFiles(decodedProject + "/**/*.csproj").then(this.CheckFilesFound);
     }
-		//this is definitely not the best way to search within workspace with user-specified ${workspaceFolder}
-		if(decodedProject.startsWith(workspaceFolderKeyword)) {
-			decodedProject = decodedProject.substring(workspaceFolderKeyword.length + 1);
-		}
+    //this is definitely not the best way to search within workspace with user-specified ${workspaceFolder}
+    if (decodedProject.startsWith(workspaceFolderKeyword)) {
+      decodedProject = decodedProject.substring(workspaceFolderKeyword.length + 1);
+    }
     const projectUri = Uri.file(decodedProject);
 
     if (workspace.workspaceFolders != null) {
@@ -220,12 +237,12 @@ export default class TaskService implements Disposable {
         DotNetWatch.UiService.OpenProjectQuickPick(tmp).then(async (s) => {
           if (s) {
             const task = await TaskService.GenerateTask(config, s.uri);
-            TaskService.StartTask(task);
+            if (task !== undefined) TaskService.StartTask(task);
           }
         });
       } else {
         const task = await TaskService.GenerateTask(config, tmp[0]);
-        TaskService.StartTask(task);
+        if (task !== undefined) TaskService.StartTask(task);
       }
     });
   }
@@ -241,8 +258,8 @@ export default class TaskService implements Disposable {
     this.CheckProjectConfig(config.project).then(async (projectUri) => {
       if (projectUri) {
         const task = await TaskService.GenerateTask(config, projectUri);
-        TaskService.StartTask(task);
-				console.log("started task")
+        if (task !== undefined) TaskService.StartTask(task);
+        console.log("started task");
       }
       // if no project not found or it isn't unique show error message.
       else {

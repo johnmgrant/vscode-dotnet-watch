@@ -48,4 +48,12 @@ export default interface IDotNetWatchDebugConfiguration extends DebugConfigurati
    * @memberof IDotNetWatchDebugConfiguration
    */
   project: string;
+
+  /**
+   * The task command name to use instead.
+   *
+   * @type {string}
+   * @memberof IDotNetWatchDebugConfiguration
+   */
+  taskName?: string;
 }

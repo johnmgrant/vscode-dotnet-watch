@@ -69,6 +69,11 @@
                 "description": "Environment variables passed to the program.",
                 "default": {}
               },
+              "taskName": {
+                "type": "string",
+                "description": "The task to start the project, bypass the quick pick menu.",
+                "default": ""
+              },
               "project": {
                 "type": "string",
                 "description": "The project to start, bypass the quick pick menu.",
@@ -86,6 +91,7 @@
               "request": "launch",
               "name": ".NET Core Watch",
               "args": [],
+              "taskName": "",
               "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
               }
@@ -115,7 +121,7 @@
     "@types/glob": "^7.1.1",
     "@types/mocha": "^5.2.7",
     "@types/node": "^11.15.3",
-    "@types/vscode": "1.69.1",
+    "@types/vscode": "^1.69.1",
     "@typescript-eslint/eslint-plugin": "^5.10.2",
     "@typescript-eslint/parser": "^5.10.2",
     "commitizen": "^4.2.4",
