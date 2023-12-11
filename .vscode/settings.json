@@ -1,13 +1,31 @@
-// Place your settings in this file to overwrite default and user settings.
 {
+  "editor.formatOnSave": true,
+  "editor.formatOnType": false,
+  "editor.formatOnPaste": false,
+  "editor.formatOnSaveMode": "file",
+  // Configure formatting --> then --> linting IN SEQUENCE
+  // Requires "Format Code Action" VSCode Extension
+  "[typescript][typescriptreact][javascript]": {
+    "editor.formatOnSave": false,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": ["source.formatDocument", "source.fixAll.eslint"]
+  },
+  "typescript.tsdk": "node_modules/typescript/lib",
   "files.exclude": {
-    "out": false // set this to true to hide the "out" folder with the compiled JS files
+    "dist": false,
+    "**/package-lock.json": true,
+    "**/node_modules/**": false,
+    "**/.git": false
+  },
+  "explorer.autoReveal": true,
+  "explorer.autoRevealExclude": {
+    "**/node_modules": false
   },
   "search.exclude": {
-    "out": true // set this to false to include "out" folder in search results
+    "dist": true,
+    "package-lock.json": true,
+    "**/.git": true
   },
-  "editor.formatOnSave": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "eslint.validate": ["typescript"],
   "eslint.enable": true
 }

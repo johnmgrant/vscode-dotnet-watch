@@ -60,7 +60,7 @@ export default class CacheService implements Disposable {
    * @memberof CacheService
    */
   public dispose() {
-    this.RunningAutoAttachTasks.forEach((k, v) => {
+    this.RunningAutoAttachTasks.forEach((_k, v) => {
       v.Terminate();
     });
     this.RunningAutoAttachTasks.clear();

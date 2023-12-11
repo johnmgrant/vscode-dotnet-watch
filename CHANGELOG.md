@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/murugaratham/vscode-dotnet-watch/compare/v1.1.8...v1.2.0) (2024-10-12)
+
+
+### Features
+
+* **task-service:** adds support to specify a dotnet watch task to run ([f66ca66](https://github.com/murugaratham/vscode-dotnet-watch/commit/f66ca6604a820554ac5c9485fc5c9b148ddbce58))
+* **task-service:** clean up comments and check for running task based on custom `taskName` ([ecc83ef](https://github.com/murugaratham/vscode-dotnet-watch/commit/ecc83ef2543bfecdec6935719090aa23b4af4e57))
+
 ### [1.1.8](https://github.com/murugaratham/vscode-dotnet-watch/compare/v1.1.6...v1.1.8) (2022-09-26)
 
 

@@ -64,10 +64,10 @@ export default class AttachService implements Disposable {
    * The poll timer.
    *
    * @private
-   * @type {NodeJS.Timer}
+   * @type {NodeJS.Timeout}
    * @memberof AttachService
    */
-  private timer: NodeJS.Timer | undefined;
+  private timer: NodeJS.Timeout | undefined;
 
   /**
    * Get the default DebugConfiguration
@@ -114,7 +114,7 @@ export default class AttachService implements Disposable {
   private ScanToAttach(): void {
     let processesToScan = new Array<ProcessDetail>();
     const runningTasks = DotNetWatch.Cache.RunningAutoAttachTasks;
-    runningTasks.forEach((k, v) => {
+    runningTasks.forEach((_k, v) => {
       if (v && v.ProcessId) {
         processesToScan = processesToScan.concat(DotNetWatch.ProcessService.GetProcesses(v.ProcessId.toString()));
       }

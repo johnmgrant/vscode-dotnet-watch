@@ -119,7 +119,7 @@ export default class TaskService implements Disposable {
     if (!taskName) {
       await TaskService.TryLoadLaunchProfile(launchSettingsPath, config);
       const task: Task = new Task(
-        { type: `Watch ${projectName}`, presentation: { group: "dev" } } as TaskDefinition,
+        { label: `Watch ${projectName}`, type: "DotNetWatch", presentation: { group: "dev" } } as TaskDefinition,
         config.workspace,
         `Watch ${projectName}`,
         "DotNet Auto Attach",
@@ -129,7 +129,7 @@ export default class TaskService implements Disposable {
         }),
         "$msCompile"
       );
-      //setting these gives a better experience when debugging
+      // Setting these gives a better experience when debugging.
       task.presentationOptions.reveal = TaskRevealKind.Silent;
       task.presentationOptions.showReuseMessage = false;
       return task;
@@ -137,7 +137,7 @@ export default class TaskService implements Disposable {
       const workspaceTasks = await tasks.fetchTasks();
       let dotnetWatchTask: Task | undefined = undefined;
 
-      // search For the task.
+      // Search for the task when taskname is specified.
       for (const t of workspaceTasks) {
         if (t.name === taskName) {
           dotnetWatchTask = t;
@@ -204,7 +204,7 @@ export default class TaskService implements Disposable {
     if (!isCsproj) {
       return workspace.findFiles(decodedProject + "/**/*.csproj").then(this.CheckFilesFound);
     }
-    //this is definitely not the best way to search within workspace with user-specified ${workspaceFolder}
+    // this is definitely not the best way to search within workspace with user-specified ${workspaceFolder}
     if (decodedProject.startsWith(workspaceFolderKeyword)) {
       decodedProject = decodedProject.substring(workspaceFolderKeyword.length + 1);
     }
@@ -256,13 +256,14 @@ export default class TaskService implements Disposable {
    */
   private StartDotNetWatchTaskWithProjectConfig(config: DotNetWatchDebugConfiguration): void {
     this.CheckProjectConfig(config.project).then(async (projectUri) => {
+      let task: Task | undefined;
       if (projectUri) {
-        const task = await TaskService.GenerateTask(config, projectUri);
+        task = await TaskService.GenerateTask(config, projectUri);
         if (task !== undefined) TaskService.StartTask(task);
-        console.log("started task");
       }
-      // if no project not found or it isn't unique show error message.
-      else {
+
+      // If no project not found or it isn't unique show error message.
+      if (task === undefined) {
         DotNetWatch.UiService.ProjectDoesNotExistErrorMessage(config).then((open) => {
           if (open) {
             workspace.findFiles("**/launch.json").then((files) => {
